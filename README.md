@@ -73,11 +73,12 @@ All user actions are protected so that a user can access only their own data.
 
 ## Environment Setup
 
-Create a `.env` file in the root directory and add the following:
+Create a `.env` file in the root directory with the following variables:
 
+```env
 PORT=3000
-MONGO_URI=your_mongodb_atlas_connection_string
-JWT_SECRET=your_secret_key
+MONGO_URI=<your_mongodb_connection_string>
+JWT_SECRET=<your_jwt_secret>
 
 
 ---
