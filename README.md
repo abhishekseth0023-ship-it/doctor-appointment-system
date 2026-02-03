@@ -80,3 +80,11 @@ Create a `.env` file in the root directory with the following variables:
 PORT=3000
 MONGO_URI=<your_mongodb_connection_string>
 JWT_SECRET=<your_jwt_secret>
+
+## How to Run the Project
+
+1. Install dependencies:
+   ```bash
+   npm install
+2. nodemon server.js
+3. http://localhost:3000/login.html
