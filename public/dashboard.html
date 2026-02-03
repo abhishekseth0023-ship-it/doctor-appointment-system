@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">DoctorCare</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </nav>
+
+  <!-- MAIN CONTAINER -->
+  <div class="container">
+
+    <!-- BOOK APPOINTMENT CARD -->
+    <div class="card">
+      <h2>Book Appointment</h2>
+
+      <form id="appointmentForm">
+
+        <select id="doctorId" required>
+          <option value="">Select Doctor</option>
+        </select>
+
+        <input type="date" id="appointmentDate" required />
+
+        <button type="submit">Book Appointment</button>
+
+      </form>
+
+      <p id="msg" class="success-msg"></p>
+    </div>
+
+
+    <!-- APPOINTMENTS LIST -->
+    <div class="card">
+      <h2>My Appointments</h2>
+      <ul id="appointmentsList" class="appointment-list"></ul>
+    </div>
+
+  </div>
+
+  <script>
+
+  async function loadDoctors() {
+    const res = await fetch("/auth/doctors", {
+      credentials: "include"
+    });
+
+    if (!res.ok) return;
+
+    const doctors = await res.json();
+    const select = document.getElementById("doctorId");
+
+    doctors.forEach(doc => {
+      const option = document.createElement("option");
+      option.value = doc._id;      
+      option.textContent = doc.name;
+      select.appendChild(option);
+    });
+  }
+
+
+
+
+  //Appointments (PATIENT)
+  async function loadAppointments() {
+    const res = await fetch("/appointments/my", {
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      window.location.href = "/login.html";
+      return;
+    }
+
+    const appointments = await res.json();
+    const list = document.getElementById("appointmentsList");
+    list.innerHTML = "";
+
+    if (appointments.length === 0) {
+      list.innerHTML = "<li>No appointments yet</li>";
+      return;
+    }
+
+    appointments.forEach(app => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <strong>${app.doctor.name}</strong>
+        (${new Date(app.appointmentDate).toDateString()})
+        - <span class="status ${app.status}">${app.status}</span>
+        ${
+          app.status === "pending"
+            ? `<button onclick="cancelAppointment('${app._id}')">Cancel</button>`
+            : ""
+        }
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  //Appointment (PATIENT)
+  document.getElementById("appointmentForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const doctorId = document.getElementById("doctorId").value; 
+    const appointmentDate = document.getElementById("appointmentDate").value;
+
+    const res = await fetch("/appointments/book", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ doctorId, appointmentDate })
+    });
+
+    if (!res.ok) {
+      alert("Error booking appointment");
+      return;
+    }
+
+    document.getElementById("msg").innerText = "Appointment booked successfully";
+    document.getElementById("appointmentForm").reset();
+    loadAppointments();
+  });
+
+  // Cancel appointment
+  async function cancelAppointment(id) {
+    await fetch(`/appointments/cancel/${id}`, {
+      method: "PUT",
+      credentials: "include"
+    });
+
+    loadAppointments();
+  }
+
+  // Logout
+  function logout() {
+    fetch("/auth/logout", {
+      credentials: "include"
+    }).then(() => {
+      window.location.href = "/login.html";
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadDoctors();
+    loadAppointments();
+  });
+
+</script>
+
+</body>
+</html>

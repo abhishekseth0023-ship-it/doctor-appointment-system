@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Doctor Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo">DoctorCare</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </nav>
+
+  <!-- MAIN CONTAINER -->
+  <div class="container">
+
+    <div class="card" style="grid-column: span 2;">
+      <h2>My Appointments</h2>
+      <ul id="appointmentsList" class="appointment-list"></ul>
+    </div>
+
+  </div>
+
+  <script>
+    //Doctor appointments
+    async function loadDoctorAppointments() {
+      const res = await fetch("/appointments/doctor", {
+        credentials: "include"
+      });
+
+      if (res.status === 401) {
+        window.location.href = "/login.html";
+        return;
+      }
+
+      const appointments = await res.json();
+      const list = document.getElementById("appointmentsList");
+      list.innerHTML = "";
+
+      if (appointments.length === 0) {
+        list.innerHTML = "<li>No appointments yet</li>";
+        return;
+      }
+
+      appointments.forEach(app => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${app.patient.name}</strong>
+          (${new Date(app.appointmentDate).toDateString()})
+          - <span class="status ${app.status}">${app.status}</span>
+
+          ${
+            app.status === "pending"
+              ? `
+                <div class="action-buttons">
+                  <button onclick="updateStatus('${app._id}', 'approved')">Approve</button>
+                  <button onclick="updateStatus('${app._id}', 'rejected')">Reject</button>
+                </div>
+              `
+              : app.status === "approved"
+              ? `
+                <div class="action-buttons">
+                  <button onclick="updateStatus('${app._id}', 'completed')">
+                    Mark Completed
+                  </button>
+                </div>
+              `
+              : ""
+            }
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    // Approve / Reject
+    async function updateStatus(id, status) {
+      await fetch(`/appointments/${id}/status`, {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+
+      loadDoctorAppointments();
+    }
+
+    // Logout
+    function logout() {
+      fetch("/auth/logout", {
+        credentials: "include"
+      }).then(() => {
+        window.location.href = "/login.html";
+      });
+    }
+
+    loadDoctorAppointments();
+  </script>
+
+</body>
+</html>
