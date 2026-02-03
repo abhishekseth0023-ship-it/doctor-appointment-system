@@ -60,44 +60,6 @@ All user actions are protected so that a user can access only their own data.
 
 ---
 
-## Folder Structure
-
-Doctor Appointment System/
-│
-├── server.js
-├── app.js
-├── .env
-│
-├── config/
-│ └── db.js
-│
-├── models/
-│ ├── User.js
-│ └── Appointment.js
-│
-├── controllers/
-│ ├── authController.js
-│ └── appointmentController.js
-│
-├── routes/
-│ ├── authRoutes.js
-│ └── appointmentRoutes.js
-│
-├── middleware/
-│ └── authMiddleware.js
-│
-├── public/
-│ ├── login.html
-│ ├── register.html
-│ ├── dashboard.html
-│ └── css/
-│ └── style.css
-│
-└── README.md
-
-
----
-
 ## Application Flow
 
 1. User registers or logs in
